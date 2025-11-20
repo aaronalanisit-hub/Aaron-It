@@ -1,0 +1,16 @@
+if (t === 'show last aaron' || t === 'last aaron it') {
+  const raw = localStorage.getItem('aaron_it_last_run');
+  if (!raw) {
+    addMsg('bot', "I don't have a stored Aaron IT+ run yet on this device.");
+  } else {
+    const parsed = JSON.parse(raw);
+    addMsg(
+      'bot',
+      "Re-generating your Aaron IT+ profile from the last stored run…"
+    );
+    AARON_STATE.answers = parsed;
+    AARON_STATE.phase = 'done';
+    requestAaronReport();
+  }
+  return;
+} somebody
