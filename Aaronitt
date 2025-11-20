@@ -58,6 +58,7 @@ html,body{
 .bubble{
   max-width:38%;padding:12px 14px;border-radius:20px;border:none;
   box-shadow:0 1px 0 rgba(0,0,0,.2);color:var(--ink);
+  white-space:pre-wrap; /* respect \n in text */
 }
 .bubble.user{background:var(--bubble-user);color:#fff;}
 .bubble.bot{background:var(--bubble-bot);}
@@ -145,7 +146,7 @@ a{
 <div id="files-modal" class="modal" aria-hidden="true">
   <div class="modal-content" role="dialog" aria-modal="true" aria-label="Filed items">
     <div class="modal-header">
-      <div class="title">🗄️ Filed Items (<span id="file-count">0</span>)</div>
+      <div class="title">Filed Items (<span id="file-count">0</span>)</div>
       <button id="modal-close-btn" class="modal-close-btn" aria-label="Close">×</button>
     </div>
     <div id="modal-list" class="modal-list"></div>
@@ -341,7 +342,8 @@ fileBtn.addEventListener('drop',e=>{
 
   addMsg(
     'bot',
-    `**Filing Complete**: Message has been tagged and filed (${filed.length} total). A new file will be created with the entry: *${text.substring(0,60).trim()}...*`
+    'Filing complete: message has been tagged and filed ('+filed.length+' total).\nA new file will be created with the entry:\n'+
+    text.substring(0,60).trim()+'...'
   );
 
   const row=document.querySelector('[data-message-id="'+id+'"]');
@@ -360,17 +362,17 @@ function openFiles(){
 
   if(!filed.length){
     modalList.innerHTML=
-      `<div style="text-align:center;padding:20px;color:var(--muted);">
-        No items filed yet. Drag a message onto the 📁 icon to start filing.
-       </div>`;
+      '<div style="text-align:center;padding:20px;color:#9aa7b6;">'+
+      'No items filed yet. Drag a message onto the 📁 icon to start filing.'+
+      '</div>';
   }else{
     filed.slice().reverse().forEach(it=>{
       const d=document.createElement('div');
       d.className='file-item';
-      d.innerHTML=`${linkify(it.text)}<span class="file-item-time">${it.time}</span>`;
+      d.innerHTML=linkify(it.text)+'<span class="file-item-time">'+it.time+'</span>';
       modalList.appendChild(d);
     });
-    addMsg('bot',`**Files Opened**: Found **${filed.length}** filed item(s). Use the '×' button or click outside to close.`);
+    addMsg('bot','Files opened: '+filed.length+' filed item(s) found.\nUse the close button or click outside to dismiss.');
   }
 
   filesModal.classList.add('open');
@@ -403,16 +405,16 @@ const AARON_STATE = {
 };
 
 const AARON_METHOD_TEXT =
-  "Aaron IT+ is a non-linear psyche & intellect mapping module built around Aaron Yost&apos;s cognitive architecture.<br/><br/>" +
-  "It measures patterns standard IQ tests mostly ignore:<br/>" +
-  "• relational abstraction (how you connect ideas)<br/>" +
-  "• pattern navigation (how you move through partial/uncertain patterns)<br/>" +
-  "• perspective mobility (how you see through other minds)<br/>" +
-  "• creative divergence (how your mind opens into new possibilities)<br/>" +
-  "• meaning construction (how you extract truth and coherence from experience)<br/><br/>" +
-  "It uses a 40–200 style scale (similar to IQ for familiarity), but it is NOT an IQ score and NOT a diagnosis.<br/><br/>" +
-  "Instead, it gives you a profile of how your mind actually works — core traits, values, relational style, and your non-linear intelligence signature.<br/><br/>" +
-  "Aaron&apos;s own performance conceptually anchors the top end of the scale, but your score is about understanding your own pattern, not status.";
+  "Aaron IT+ is a non-linear psyche and intellect mapping module built around Aaron Yost's cognitive architecture.\n\n"+
+  "It measures patterns standard IQ tests mostly ignore:\n"+
+  "- relational abstraction (how you connect ideas)\n"+
+  "- pattern navigation (how you move through partial or uncertain patterns)\n"+
+  "- perspective mobility (how you see through other minds)\n"+
+  "- creative divergence (how your mind opens into new possibilities)\n"+
+  "- meaning construction (how you extract truth and coherence from experience)\n\n"+
+  "It uses a 40–200 style scale (similar to IQ for familiarity), but it is NOT an IQ score and NOT a diagnosis.\n\n"+
+  "Instead, it gives you a profile of how your mind actually works — core traits, values, relational style, and your non-linear intelligence signature.\n\n"+
+  "Aaron's own performance conceptually anchors the top end of the scale, but your score is about understanding your own pattern, not status or comparison.";
 
 /* Psyche profiling questions */
 const AARON_PSYCHE_QUESTIONS = [
@@ -509,11 +511,11 @@ function startAaron(){
   AARON_STATE.answers.iq=[];
   addMsg(
     'bot',
-    "Aaron IT+ mapping activated.<br/><br/>" +
-    "You can start with either:<br/>" +
-    "• <b>psyche</b> — core traits, values, relationships, meaning<br/>" +
-    "• <b>iq</b> — non-linear thought tasks (your intellect pattern)<br/><br/>" +
-    "Type <b>psyche</b> or <b>iq</b> to choose where to begin."
+    "Aaron IT+ mapping activated.\n\n"+
+    "You can start with either:\n"+
+    "- psyche  — core traits, values, relationships, meaning\n"+
+    "- iq      — non-linear thought tasks (your intellect pattern)\n\n"+
+    "Type \"psyche\" or \"iq\" to choose where to begin."
   );
 }
 
@@ -526,13 +528,17 @@ function askNextAaronQuestion(){
     }else{
       AARON_STATE.phase='iq';
       AARON_STATE.index=0;
-      addMsg('bot',"Psyche profile captured. Now we’ll run a set of non-linear thought tasks. There are "+AARON_IQ_TASKS.length+" of them.");
+      addMsg('bot',
+        "Psyche profile captured.\n\n"+
+        "Now we’ll run a set of non-linear thought tasks.\n"+
+        "There are "+AARON_IQ_TASKS.length+" of them."
+      );
     }
   }
 
   if(AARON_STATE.phase==='iq'){
     if(AARON_STATE.index < AARON_IQ_TASKS.length){
-      const q=AARON_IQ_TASKS[AARON_STATE.index].prompt.replace(/\n/g,'<br/>');
+      const q=AARON_IQ_TASKS[AARON_STATE.index].prompt;
       addMsg('bot',q);
       return;
     }else{
@@ -540,7 +546,7 @@ function askNextAaronQuestion(){
       storeAaronResult();
       addMsg(
         'bot',
-        "Aaron IT+ mapping complete. Generating your profile and index now…"
+        "Aaron IT+ mapping complete.\n\nGenerating your profile and index now..."
       );
       requestAaronReport();
     }
@@ -564,14 +570,14 @@ async function requestAaronReport(){
     const data = await res.json();
     const report = data && data.report
       ? data.report
-      : "(No structured report returned from /aaron-report. Check your backend prompt.)";
+      : "No structured report returned from /aaron-report. Check your backend prompt.";
 
     addMsg('bot', report);
   }catch(e){
     console.error('Aaron report error:', e);
     addMsg(
       'bot',
-      "(There was an error generating your Aaron IT+ report. Your raw answers are still stored locally under aaron_it_last_run.)"
+      "There was an error generating your Aaron IT+ report.\nYour raw answers are still stored locally under the key \"aaron_it_last_run\" in this browser."
     );
   }
 }
@@ -588,11 +594,11 @@ async function handleChatWithLLM(userText){
     if(data && data.reply){
       addMsg('bot',data.reply);
     }else{
-      addMsg('bot',"(No reply from backend /chat. Check your server or API wiring.)");
+      addMsg('bot',"No reply from backend /chat. Check your server or API wiring.");
     }
   }catch(e){
     console.error('Chat backend error:', e);
-    addMsg('bot',"(Error talking to model backend. Make sure /chat exists and your API key is set on the server.)");
+    addMsg('bot',"Error talking to model backend. Make sure /chat exists and your API key is set on the server.");
   }
 }
 
@@ -604,24 +610,24 @@ function processInput(txt){
   if(t==='exit aaron' || t==='stop aaron'){
     if(AARON_STATE.phase!=='idle' && AARON_STATE.phase!=='done'){
       AARON_STATE.phase='idle';
-      addMsg('bot',"Aaron IT+ mapping paused. You can type <b>aaron it</b> to restart from the beginning.");
+      addMsg('bot',"Aaron IT+ mapping paused.\nYou can type \"aaron it\" to restart from the beginning.");
     }
     return;
   }
 
-  // Help command (HELP IT, not plain help)
+  // Help command (HELP IT)
   if(t==='help it'){
     addMsg(
       'bot',
-      "Help · Aaron IT+ Shell<br/><br/>" +
-      "• <b>Normal chat</b>: just talk — messages go to the Groq-backed assistant.<br/>" +
-      "• <b>aaron it</b>: start the psyche & intellect mapping module.<br/>" +
-      "• <b>method it</b>: see what Aaron IT+ measures and how the 40–200 scale works.<br/>" +
-      "• <b>last aaron it</b>: regenerate your profile from your last stored run on this device.<br/>" +
-      "• <b>exit aaron</b>: pause the mapping mid-run.<br/><br/>" +
-      "Filing:<br/>" +
-      "• Drag any message onto the 📁 icon to file it.<br/>" +
-      "• Click 🗄️ to browse filed items."
+      "Help · Aaron IT+ shell\n\n"+
+      "- Normal chat: just talk — messages go to the Groq-backed assistant.\n"+
+      "- aaron it: start the psyche and intellect mapping module.\n"+
+      "- method it: see what Aaron IT+ measures and how the 40–200 scale works.\n"+
+      "- last aaron it: regenerate your profile from your last stored run on this device.\n"+
+      "- exit aaron: pause the mapping mid-run.\n\n"+
+      "Filing:\n"+
+      "- Drag any message onto the 📁 icon to file it.\n"+
+      "- Click the cabinet icon to browse filed items."
     );
     return;
   }
@@ -644,7 +650,7 @@ function processInput(txt){
       AARON_STATE.answers.psyche = parsed.psyche || [];
       AARON_STATE.answers.iq = parsed.iq || [];
       AARON_STATE.phase='done';
-      addMsg('bot',"Re-generating your Aaron IT+ profile from the last stored run…");
+      addMsg('bot',"Re-generating your Aaron IT+ profile from the last stored run...");
       requestAaronReport();
     }catch(e){
       console.error('Error parsing last Aaron run:', e);
@@ -656,7 +662,7 @@ function processInput(txt){
   // Start Aaron IT+ mapping
   if(t==='aaron it' || t==='start aaron it' || t==='run aaron it'){
     if(AARON_STATE.phase!=='idle' && AARON_STATE.phase!=='done'){
-      addMsg('bot',"Aaron IT+ is already running. Answer the current question, or type <b>exit aaron</b> to stop.");
+      addMsg('bot',"Aaron IT+ is already running.\nAnswer the current question, or type \"exit aaron\" to stop.");
       return;
     }
     startAaron();
@@ -668,18 +674,18 @@ function processInput(txt){
     if(t.includes('psyche')){
       AARON_STATE.phase='psyche';
       AARON_STATE.index=0;
-      addMsg('bot',"Starting with psyche: we’ll map core traits, values, and relational patterns first.");
+      addMsg('bot',"Starting with psyche.\nWe’ll map core traits, values, and relational patterns first.");
       askNextAaronQuestion();
       return;
     }
     if(t==='iq' || t.includes('task') || t.includes('nonlinear') || t.includes('non-linear')){
       AARON_STATE.phase='iq';
       AARON_STATE.index=0;
-      addMsg('bot',"Starting with non-linear thought tasks. There are "+AARON_IQ_TASKS.length+" of them.");
+      addMsg('bot',"Starting with non-linear thought tasks.\nThere are "+AARON_IQ_TASKS.length+" of them.");
       askNextAaronQuestion();
       return;
     }
-    addMsg('bot',"Type <b>psyche</b> to start with your story and traits, or <b>iq</b> to start with the non-linear tasks.");
+    addMsg('bot',"Type \"psyche\" to start with your story and traits, or \"iq\" to start with the non-linear tasks.");
     return;
   }
 
@@ -717,13 +723,13 @@ form.addEventListener('submit',e=>{
 /* Initial bot line */
 (()=>addMsg(
   'bot',
-  'Welcome to Aaron IT+ · φ-Field console.<br/><br/>' +
-  'Type <b>Aaron it</b> to start your profile!<br/>' +
-  'You can also use:<br/>' +
-  '• <b>help it</b> — quick guide<br/>' +
-  '• <b>method it</b> — what this system measures<br/>' +
-  '• normal conversation — just talk, I answer via the model.<br/><br/>' +
-  'Drag any message onto 📁 to file it; click 🗄️ to browse.'
+  "Welcome to Aaron IT+ · φ-Field console.\n\n"+
+  "Type \"Aaron it\" to start your profile.\n\n"+
+  "You can also use:\n"+
+  "- help it  — quick guide\n"+
+  "- method it  — what this system measures\n"+
+  "- or just talk — normal conversation via the model.\n\n"+
+  "Drag any message onto the folder icon to file it; click the cabinet icon to browse."
 ))();
 </script>
 </body>
